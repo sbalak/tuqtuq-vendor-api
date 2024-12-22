@@ -1,6 +1,6 @@
-﻿namespace Vendor.Infrastructure
+﻿namespace Vendor.Data
 {
-    public class UserModel
+    public class Staff
     {
         public int Id { get; set; }
         public string? Email { get; set; }
@@ -15,9 +15,12 @@
         public DateTime? OtpExpiry { get; set; }
     }
 
-    public class UserCoordinatesModel
+    public class Contract
     {
-        public double? Latitude { get; set; }
-        public double? Longitude { get; set; }
+        public int Id { get; set; }
+        public int RestaurantId { get; set; }
+        public int StaffId { get; set; }
+        public Restaurant Restaurant { get; set; }
+        public Staff Staff { get; set; }
     }
 }

@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Interfaces\IOrderService.cs" />
+    <Compile Remove="Interfaces\IRestaurantService.cs" />
+    <Compile Remove="Models\OrderModel.cs" />
+    <Compile Remove="Models\RestaurantModel.cs" />
+    <Compile Remove="Services\OrderService.cs" />
+    <Compile Remove="Services\RestaurantService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Vendor.Data\Vendor.Data.csproj" />
   </ItemGroup>
 

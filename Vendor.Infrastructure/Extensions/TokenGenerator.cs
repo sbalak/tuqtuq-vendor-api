@@ -17,10 +17,10 @@ namespace Vendor.Infrastructure
             Configuration = configuration;
         }
 
-        public AccessTokenModel GenerateToken(User user)
+        public AccessTokenModel GenerateToken(Staff staff)
         {
             AccessTokenModel token = new AccessTokenModel();
-            token.AccessToken = GenerateAccessToken(user);
+            token.AccessToken = GenerateAccessToken(staff);
             token.RefreshToken = GenerateRefreshToken();
             return token;
         }
@@ -38,14 +38,14 @@ namespace Vendor.Infrastructure
             return new JwtSecurityTokenHandler().ValidateToken(token, validation, out _);
         }
 
-        private string GenerateAccessToken(User user)
+        private string GenerateAccessToken(Staff staff)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]);
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = GenerateClaims(user),
+                Subject = GenerateClaims(staff),
                 Expires = DateTime.Now.AddSeconds(Convert.ToInt32(Configuration["Jwt:Expires"])),
                 Issuer = Configuration["Jwt:Issuer"],
                 Audience = Configuration["Jwt:Audience"],
@@ -68,13 +68,13 @@ namespace Vendor.Infrastructure
             return Convert.ToBase64String(randomNumber);
         }
 
-        private static ClaimsIdentity GenerateClaims(User user)
+        private static ClaimsIdentity GenerateClaims(Staff staff)
         {
             var claims = new ClaimsIdentity();
 
-            claims.AddClaim(new Claim("Id", user.Id.ToString()));
-            //claims.AddClaim(new Claim("Email", user.Email.ToString()));
-            //claims.AddClaim(new Claim("Phone", user.Phone));
+            claims.AddClaim(new Claim("Id", staff.Id.ToString()));
+            //claims.AddClaim(new Claim("Email", staff.Email.ToString()));
+            //claims.AddClaim(new Claim("Phone", staff.Phone));
 
             return claims;
         }

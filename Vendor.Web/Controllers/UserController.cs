@@ -7,40 +7,40 @@ namespace Vendor.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class UserController : ControllerBase
+    public class StaffController : ControllerBase
     {
-        private IUserService _user;
+        private IStaffService _staff;
 
-        public UserController(IUserService user)
+        public StaffController(IStaffService staff)
         {
-            _user = user;
+            _staff = staff;
         }
 
         [HttpGet("Details")]
-        public async Task<UserModel> Details(int userId)
+        public async Task<StaffModel> Details(int staffId)
         {
-            var user = await _user.GetUser(userId);
-            return user;
+            var staff = await _staff.GetStaff(staffId);
+            return staff;
         }
 
         [HttpPost("Update")]
-        public async Task<bool> Update(int userId, string firstName, string lastName)
+        public async Task<bool> Update(int staffId, string firstName, string lastName)
         {
-            await _user.Update(userId, firstName, lastName);
+            await _staff.Update(staffId, firstName, lastName);
             return true;
         }
 
         [HttpGet("Coordinates")]
-        public async Task<UserCoordinatesModel> Coordinates(int userId)
+        public async Task<StaffCoordinatesModel> Coordinates(int staffId)
         {
-            var coordinates = await _user.GetCoordinates(userId);
+            var coordinates = await _staff.GetCoordinates(staffId);
             return coordinates;
         }
 
         [HttpPost("SetCoordinates")]
-        public async Task<bool> SetCoordinates(int userId, double latitude, double longitude)
+        public async Task<bool> SetCoordinates(int staffId, double latitude, double longitude)
         {
-            await _user.SetCoordinates(userId, latitude, longitude);
+            await _staff.SetCoordinates(staffId, latitude, longitude);
             return true;
         }
     }

@@ -3,18 +3,18 @@ using Vendor.Data;
 
 namespace Vendor.Infrastructure
 {
-    public class UserService : IUserService
+    public class StaffService : IStaffService
     {
         private readonly VendorContext _context;
 
-        public UserService(VendorContext context)
+        public StaffService(VendorContext context)
         {
             _context = context;
         }
 
-        public async Task<UserModel> GetUser(int userId)
+        public async Task<StaffModel> GetStaff(int staffId)
         {
-            var user = await _context.Users.Where(x => x.Id == userId).Select(x => new UserModel 
+            var staff = await _context.Staffs.Where(x => x.Id == staffId).Select(x => new StaffModel 
                 { 
                     Id = x.Id,
                     Email = x.Email,
@@ -28,25 +28,25 @@ namespace Vendor.Infrastructure
                     Otp = x.Otp,
                     OtpExpiry = x.OtpExpiry
                 }).FirstOrDefaultAsync();
-            return user;
+            return staff;
         }
 
-        public async Task<bool> Update(int userId, string firstName, string lastName)
+        public async Task<bool> Update(int staffId, string firstName, string lastName)
         {
-            var user = await _context.Users.Where(x => x.Id == userId).FirstOrDefaultAsync();
+            var staff = await _context.Staffs.Where(x => x.Id == staffId).FirstOrDefaultAsync();
 
-            user.FirstName = firstName;
-            user.LastName = lastName;
+            staff.FirstName = firstName;
+            staff.LastName = lastName;
 
-            _context.Users.Update(user);
+            _context.Staffs.Update(staff);
             await _context.SaveChangesAsync();
 
             return true;
         }
 
-        public async Task<UserCoordinatesModel> GetCoordinates(int userId)
+        public async Task<StaffCoordinatesModel> GetCoordinates(int staffId)
         {
-            var coordinates = await _context.Users.Where(x => x.Id == userId).Select(x => new UserCoordinatesModel 
+            var coordinates = await _context.Staffs.Where(x => x.Id == staffId).Select(x => new StaffCoordinatesModel 
                 { 
                     Latitude = x.Latitude, 
                     Longitude = x.Longitude 
@@ -54,14 +54,14 @@ namespace Vendor.Infrastructure
             return coordinates;
         }
 
-        public async Task<bool> SetCoordinates(int userId, double latitude, double longitude)
+        public async Task<bool> SetCoordinates(int staffId, double latitude, double longitude)
         {
-            var user = await _context.Users.Where(x => x.Id == userId).FirstOrDefaultAsync();
+            var staff = await _context.Staffs.Where(x => x.Id == staffId).FirstOrDefaultAsync();
 
-            user.Latitude = latitude;
-            user.Longitude = longitude;
+            staff.Latitude = latitude;
+            staff.Longitude = longitude;
 
-            _context.Users.Update(user);
+            _context.Staffs.Update(staff);
             await _context.SaveChangesAsync();
 
             return true;

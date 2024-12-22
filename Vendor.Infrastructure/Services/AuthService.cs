@@ -21,24 +21,24 @@ namespace Vendor.Infrastructure
             if (phoneNumber)
             {
                 var otp = "123456";//Assist.GenerateOTP();
-                var user = await _context.Users.Where(x => x.Phone == username).FirstOrDefaultAsync();
+                var staff = await _context.Staffs.Where(x => x.Phone == username).FirstOrDefaultAsync();
 
-                if (user == null)
+                if (staff == null)
                 {
-                    user = new User();
+                    staff = new Staff();
 
-                    user.Phone = username;
+                    staff.Phone = username;
 
-                    await _context.Users.AddAsync(user);
+                    await _context.Staffs.AddAsync(staff);
                     await _context.SaveChangesAsync();
                 }
 
-                user.RefreshToken = null;
-                user.RefreshTokenExpiry = null;
-                user.Otp = otp;
-                user.OtpExpiry = DateTime.Now.AddSeconds(120);
+                staff.RefreshToken = null;
+                staff.RefreshTokenExpiry = null;
+                staff.Otp = otp;
+                staff.OtpExpiry = DateTime.Now.AddSeconds(120);
 
-                _context.Users.Update(user);
+                _context.Staffs.Update(staff);
                 await _context.SaveChangesAsync();
             }
         }
@@ -50,26 +50,26 @@ namespace Vendor.Infrastructure
 
             if (tokenPrincipal?.Identity?.IsAuthenticated == true)
             {
-                var userId = tokenPrincipal.Claims.Where(x => x.Type == "Id").Select(x => x.Value).FirstOrDefault();
+                var staffId = tokenPrincipal.Claims.Where(x => x.Type == "Id").Select(x => x.Value).FirstOrDefault();
 
-                if (userId != null)
+                if (staffId != null)
                 {
-                    var user = await _context.Users.Where(x => x.Id == Convert.ToInt32(userId)).FirstOrDefaultAsync();
+                    var staff = await _context.Staffs.Where(x => x.Id == Convert.ToInt32(staffId)).FirstOrDefaultAsync();
 
-                    if (user == null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiry < DateTime.Now)
+                    if (staff == null || staff.RefreshToken != model.RefreshToken || staff.RefreshTokenExpiry < DateTime.Now)
                     {
                         return response;
                     }
 
-                    response = _privilege.GenerateToken(user);
+                    response = _privilege.GenerateToken(staff);
 
                     response.AccessToken = response.AccessToken;
                     response.RefreshToken = response.RefreshToken;
 
-                    user.RefreshToken = response.RefreshToken;
-                    user.RefreshTokenExpiry = DateTime.Now.AddDays(90);
+                    staff.RefreshToken = response.RefreshToken;
+                    staff.RefreshTokenExpiry = DateTime.Now.AddDays(90);
 
-                    _context.Users.Update(user);
+                    _context.Staffs.Update(staff);
                     await _context.SaveChangesAsync();
                 }
             }
@@ -84,21 +84,21 @@ namespace Vendor.Infrastructure
 
             if (phoneNumber)
             {
-                var user = await _context.Users.Where(x => x.Phone == username && x.Otp == code && x.OtpExpiry > DateTime.Now).FirstOrDefaultAsync();
+                var staff = await _context.Staffs.Where(x => x.Phone == username && x.Otp == code && x.OtpExpiry > DateTime.Now).FirstOrDefaultAsync();
 
-                if (user != null)
+                if (staff != null)
                 {
-                    response = _privilege.GenerateToken(user);
+                    response = _privilege.GenerateToken(staff);
 
                     response.AccessToken = response.AccessToken;
                     response.RefreshToken = response.RefreshToken;
 
-                    user.RefreshToken = response.RefreshToken;
-                    user.RefreshTokenExpiry = DateTime.Now.AddDays(90);
-                    user.Otp = null;
-                    user.OtpExpiry = null;
+                    staff.RefreshToken = response.RefreshToken;
+                    staff.RefreshTokenExpiry = DateTime.Now.AddDays(90);
+                    staff.Otp = null;
+                    staff.OtpExpiry = null;
 
-                    _context.Users.Update(user);
+                    _context.Staffs.Update(staff);
                     await _context.SaveChangesAsync();
                 }
             }

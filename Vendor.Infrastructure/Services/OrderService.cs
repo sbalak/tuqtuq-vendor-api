@@ -13,14 +13,32 @@ namespace Vendor.Infrastructure
             _context = context;
         }
 
-        public async Task<List<OrderModel>> GetOrders(int restaurantId, int? page = 1, int? pageSize = 10)
+        public async Task<List<OrderModel>> GetOrders(int restaurantId, string orderType, int? page = 1, int? pageSize = 10)
         {
             List<OrderModel> orders = new List<OrderModel>();
+            IQueryable<Order> _orders = _context.Orders;
 
             int offset = (Convert.ToInt32(page) - 1) * Convert.ToInt32(pageSize);
             int fetch = Convert.ToInt32(page) * Convert.ToInt32(pageSize);
 
-            var ordersList = await (from m in _context.Orders
+            if (orderType == "New")
+            {
+                _orders = _orders.Where(m => m.Status == "New");
+            }
+            else if (orderType == "Accepted" || orderType == "Pending")
+            {
+                _orders = _orders.Where(m => m.Status == "Accepted");
+            }
+            else if (orderType == "Completed")
+            {
+                _orders = _orders.Where(m => m.Status == "Completed");
+            }
+            else if (orderType == "Rejected")
+            {
+                _orders = _orders.Where(m => m.Status == "Rejected");
+            }
+            
+            var ordersList = await (from m in _orders
                                     join n in _context.Restaurants on m.RestaurantId equals n.Id
                                     where n.Id == restaurantId
                                     select new
@@ -174,17 +192,35 @@ namespace Vendor.Infrastructure
 
         public async Task Accept(int orderId)
         {
+            var order = await _context.Orders.Where(m => m.Id == orderId).FirstOrDefaultAsync();
 
+            order.Status = "Accepted";
+            order.DateAccepted = DateTime.Now;
+
+            _context.Orders.Update(order);
+            await _context.SaveChangesAsync();
         }
 
         public async Task Reject(int orderId)
         {
+            var order = await _context.Orders.Where(m => m.Id == orderId).FirstOrDefaultAsync();
 
+            order.Status = "Rejected";
+            order.DateRejected = DateTime.Now;
+
+            _context.Orders.Update(order);
+            await _context.SaveChangesAsync();
         }
 
         public async Task Complete(int orderId)
         {
+            var order = await _context.Orders.Where(m => m.Id == orderId).FirstOrDefaultAsync();
 
+            order.Status = "Completed";
+            order.DateCompleted = DateTime.Now;
+
+            _context.Orders.Update(order);
+            await _context.SaveChangesAsync();
         }
     }
 }

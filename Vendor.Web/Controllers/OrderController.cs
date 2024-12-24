@@ -17,9 +17,9 @@ namespace Vendor.Web.Controllers
         }
 
         [HttpGet("List")]
-        public async Task<List<OrderModel>> List(int restaurantId, int? page = 1, int? pageSize = 10)
+        public async Task<List<OrderModel>> List(int restaurantId, string orderType, int? page = 1, int? pageSize = 10)
         {
-            var orders = await _order.GetOrders(restaurantId, page, pageSize);
+            var orders = await _order.GetOrders(restaurantId, orderType, page, pageSize);
             return orders;
         }
 

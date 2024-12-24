@@ -4,6 +4,7 @@
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public int PreparationTime { get; set; }
         public string Photo { get; set; }
         public string LegalName { get; set; }
         public string AddressLine1 { get; set; }

@@ -29,6 +29,7 @@ namespace Vendor.Infrastructure
                                         RestaurantId = n.Id,
                                         RestaurantName = n.Name,
                                         RestaurantLocality = n.Locality,
+                                        Status = m.Status,
                                         TotalTaxableAmount = m.TaxableAmount,
                                         TotalAmount = m.Amount,
                                         PrimaryTaxAmount = m.PrimaryTaxAmount,
@@ -45,27 +46,27 @@ namespace Vendor.Infrastructure
                     RestaurantId = ordersItem.RestaurantId,
                     RestaurantName = ordersItem.RestaurantName,
                     RestaurantLocality = ordersItem.RestaurantLocality,
-                    TotalPrimaryTaxAmount = Math.Round(ordersItem.PrimaryTaxAmount, 2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN")),
-                    TotalSecondaryTaxAmount = Math.Round(ordersItem.SecondaryTaxAmount, 2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN")),
-                    TotalTaxAmount = Math.Round(ordersItem.PrimaryTaxAmount + ordersItem.SecondaryTaxAmount, 2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN")),
-                    TotalTaxableAmount = Math.Round(ordersItem.TotalTaxableAmount, 2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN")),
-                    TotalAmount = Math.Round(ordersItem.TotalAmount,
-                    2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN")),
+                    Status = ordersItem.Status,
+                    TotalPrimaryTaxAmount = Assist.Rupee(ordersItem.PrimaryTaxAmount),
+                    TotalSecondaryTaxAmount = Assist.Rupee(ordersItem.SecondaryTaxAmount),
+                    TotalTaxAmount = Assist.Rupee(ordersItem.PrimaryTaxAmount + ordersItem.SecondaryTaxAmount),
+                    TotalTaxableAmount = Assist.Rupee(ordersItem.TotalTaxableAmount),
+                    TotalAmount = Assist.Rupee(ordersItem.TotalAmount),
                     DateOrdered = ordersItem.FormattedDateOrdered
                 };
 
                 var foodItems = await (from m in _context.Orders
-                                  join n in _context.OrderItems on m.Id equals n.OrderId
-                                  join o in _context.FoodItems on n.FoodItemId equals o.Id
-                                  where m.Id == order.OrderId
-                                  select new
-                                  {
-                                      FoodName = o.Name,
-                                      Type = o.Type,
-                                      Quantity = n.Quantity,
-                                      TaxableAmount = n.TaxableAmount,
-                                      Amount = n.Amount
-                                  }).ToListAsync();
+                                       join n in _context.OrderItems on m.Id equals n.OrderId
+                                       join o in _context.FoodItems on n.FoodItemId equals o.Id
+                                       where m.Id == order.OrderId
+                                       select new
+                                       {
+                                           FoodName = o.Name,
+                                           Type = o.Type,
+                                           Quantity = n.Quantity,
+                                           TaxableAmount = n.TaxableAmount,
+                                           Amount = n.Amount
+                                       }).ToListAsync();
 
                 if (foodItems.Count > 0)
                 {
@@ -78,11 +79,10 @@ namespace Vendor.Infrastructure
                             FoodName = foodItem.FoodName,
                             Quantity = foodItem.Quantity,
                             Type = foodItem.Type,
-                            TaxablePrice = Math.Round(foodItem.TaxableAmount / foodItem.Quantity, 2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN")),
-                            Price = Math.Round(foodItem.Amount / foodItem.Quantity, 2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN")),
-                            TaxableAmount = Math.Round(foodItem.TaxableAmount,
-                            2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN")),
-                            Amount = Math.Round(foodItem.Amount, 2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN"))
+                            TaxablePrice = Assist.Rupee(foodItem.TaxableAmount / foodItem.Quantity),
+                            Price = Assist.Rupee(foodItem.Amount / foodItem.Quantity),
+                            TaxableAmount = Assist.Rupee(foodItem.TaxableAmount),
+                            Amount = Assist.Rupee(foodItem.Amount)
 
                         };
 
@@ -112,6 +112,7 @@ namespace Vendor.Infrastructure
                                           RestaurantId = n.Id,
                                           RestaurantName = n.Name,
                                           RestaurantLocality = n.Locality,
+                                          Status = m.Status,
                                           TotalTaxableAmount = m.TaxableAmount,
                                           TotalAmount = m.Amount,
                                           PrimaryTaxAmount = m.PrimaryTaxAmount,
@@ -121,17 +122,17 @@ namespace Vendor.Infrastructure
                                       }).FirstOrDefaultAsync();
 
             var foodItems = await (from m in _context.Orders
-                              join n in _context.OrderItems on m.Id equals n.OrderId
-                              join o in _context.FoodItems on n.FoodItemId equals o.Id
-                              where m.Id == orderId
+                                   join n in _context.OrderItems on m.Id equals n.OrderId
+                                   join o in _context.FoodItems on n.FoodItemId equals o.Id
+                                   where m.Id == orderId
                                    select new
-                              {
-                                  FoodName = o.Name,
-                                  Type = o.Type,
-                                  Quantity = n.Quantity,
-                                  TaxableAmount = n.TaxableAmount,
-                                  Amount = n.Amount
-                              }).ToListAsync();
+                                   {
+                                       FoodName = o.Name,
+                                       Type = o.Type,
+                                       Quantity = n.Quantity,
+                                       TaxableAmount = n.TaxableAmount,
+                                       Amount = n.Amount
+                                   }).ToListAsync();
 
             if (orderDetails != null && foodItems.Count > 0)
             {
@@ -139,11 +140,12 @@ namespace Vendor.Infrastructure
                 order.RestaurantId = orderDetails.RestaurantId;
                 order.RestaurantName = orderDetails.RestaurantName;
                 order.RestaurantLocality = orderDetails.RestaurantLocality;
-                order.TotalPrimaryTaxAmount = Math.Round(orderDetails.PrimaryTaxAmount, 2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN"));
-                order.TotalSecondaryTaxAmount = Math.Round(orderDetails.SecondaryTaxAmount, 2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN"));
-                order.TotalTaxAmount = Math.Round(orderDetails.PrimaryTaxAmount + orderDetails.SecondaryTaxAmount, 2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN"));
-                order.TotalTaxableAmount = Math.Round(orderDetails.TotalTaxableAmount, 2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN"));
-                order.TotalAmount = Math.Round(orderDetails.TotalAmount, 2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN"));
+                order.Status = orderDetails.Status;
+                order.TotalPrimaryTaxAmount = Assist.Rupee(orderDetails.PrimaryTaxAmount);
+                order.TotalSecondaryTaxAmount = Assist.Rupee(orderDetails.SecondaryTaxAmount);
+                order.TotalTaxAmount = Assist.Rupee(orderDetails.PrimaryTaxAmount + orderDetails.SecondaryTaxAmount);
+                order.TotalTaxableAmount = Assist.Rupee(orderDetails.TotalTaxableAmount);
+                order.TotalAmount = Assist.Rupee(orderDetails.TotalAmount);
                 order.DateOrdered = orderDetails.FormattedDateOrdered;
 
                 foreach (var foodItem in foodItems)
@@ -153,11 +155,10 @@ namespace Vendor.Infrastructure
                         FoodName = foodItem.FoodName,
                         Quantity = foodItem.Quantity,
                         Type = foodItem.Type,
-                        TaxablePrice = Math.Round(foodItem.TaxableAmount / foodItem.Quantity, 2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN")),
-                        Price = Math.Round(foodItem.Amount / foodItem.Quantity, 2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN")),
-                        TaxableAmount = Math.Round(foodItem.TaxableAmount,
-                        2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN")),
-                        Amount = Math.Round(foodItem.Amount, 2).ToString("C", CultureInfo.CreateSpecificCulture("en-IN"))
+                        TaxablePrice = Assist.Rupee(foodItem.TaxableAmount / foodItem.Quantity),
+                        Price = Assist.Rupee(foodItem.Amount / foodItem.Quantity),
+                        TaxableAmount = Assist.Rupee(foodItem.TaxableAmount),
+                        Amount = Assist.Rupee(foodItem.Amount)
 
                     };
 

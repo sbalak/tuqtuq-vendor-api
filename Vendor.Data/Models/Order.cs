@@ -26,7 +26,7 @@
         public decimal TaxableAmount { get; set; }
         public decimal Amount { get; set; }
         public Order Order { get; set; }
-        public FoodItem? FoodItem { get; set; } 
+        public FoodItem? FoodItem { get; set; }
     }
     public class Rating
     {

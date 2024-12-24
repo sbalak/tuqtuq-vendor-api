@@ -10,6 +10,7 @@
         public int RestaurantId { get; set; }
         public string RestaurantName { get; set; }
         public string RestaurantLocality { get; set; }
+        public string Status { get; set; }
         public string TotalPrimaryTaxAmount { get; set; }
         public string TotalSecondaryTaxAmount { get; set; }
         public string TotalTaxAmount { get; set; }

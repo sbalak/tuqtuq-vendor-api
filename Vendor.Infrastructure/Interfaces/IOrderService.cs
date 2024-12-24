@@ -2,8 +2,11 @@
 {
     public interface IOrderService
     {
-        Task<List<OrderModel>> GetOrders(int userId, int? page = 1, int? pageSize = 10);
-        Task<OrderModel> GetOrder(int id);
-        Task Confirm(int userId);
+        Task<List<OrderModel>> GetOrders(int restaurantId, int? page = 1, int? pageSize = 10);
+        Task<OrderModel> GetOrder(int orderId);
+
+        Task Accept(int orderId);
+        Task Reject(int orderId);
+        Task Complete(int orderId);
     }
 }

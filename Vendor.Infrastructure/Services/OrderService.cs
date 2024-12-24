@@ -13,7 +13,7 @@ namespace Vendor.Infrastructure
             _context = context;
         }
 
-        public async Task<List<OrderModel>> GetOrders(int userId, int? page = 1, int? pageSize = 10)
+        public async Task<List<OrderModel>> GetOrders(int restaurantId, int? page = 1, int? pageSize = 10)
         {
             List<OrderModel> orders = new List<OrderModel>();
 
@@ -22,7 +22,7 @@ namespace Vendor.Infrastructure
 
             var ordersList = await (from m in _context.Orders
                                     join n in _context.Restaurants on m.RestaurantId equals n.Id
-                                    where m.UserId == userId
+                                    where n.Id == restaurantId
                                     select new
                                     {
                                         OrderId = m.Id,
@@ -98,14 +98,14 @@ namespace Vendor.Infrastructure
             return orders;
         }
 
-        public async Task<OrderModel> GetOrder(int id)
+        public async Task<OrderModel> GetOrder(int orderId)
         {
             OrderModel order = new OrderModel();
             List<OrderItemModel> orderItems = new List<OrderItemModel>();
 
             var orderDetails = await (from m in _context.Orders
                                       join n in _context.Restaurants on m.RestaurantId equals n.Id
-                                      where m.Id == id
+                                      where m.Id == orderId
                                       select new
                                       {
                                           OrderId = m.Id,
@@ -123,8 +123,8 @@ namespace Vendor.Infrastructure
             var foodItems = await (from m in _context.Orders
                               join n in _context.OrderItems on m.Id equals n.OrderId
                               join o in _context.FoodItems on n.FoodItemId equals o.Id
-                              where m.Id == id
-                              select new
+                              where m.Id == orderId
+                                   select new
                               {
                                   FoodName = o.Name,
                                   Type = o.Type,
@@ -171,72 +171,19 @@ namespace Vendor.Infrastructure
             return order;
         }
 
-        public async Task Confirm(int userId)
+        public async Task Accept(int orderId)
         {
-            List<OrderItem> orderItems = new List<OrderItem>();
 
-            var cart = await  _context.Carts.Where(x => x.UserId == userId).FirstOrDefaultAsync();
+        }
 
-            if (cart != null)
-            {
-                var cartItems = await _context.CartItems.Where(x => x.CartId == cart.Id).ToListAsync();
+        public async Task Reject(int orderId)
+        {
 
-                var foodItems = await (from m in _context.Carts
-                                 join n in _context.CartItems on m.Id equals n.CartId
-                                 join o in _context.FoodItems on n.FoodItemId equals o.Id
-                                 where m.UserId == userId && m.RestaurantId == cart.RestaurantId
-                                 select new
-                                 {
-                                     FoodItemId = n.FoodItemId,
-                                     FoodName = o.Name,
-                                     Price = o.Price,
-                                     TaxableAmount = ((n.Quantity * o.Price) / (100 + o.Restaurant.PrimaryTaxRate + o.Restaurant.SecondaryTaxRate)) * 100,
-                                     Amount = n.Quantity * o.Price,
-                                     PrimaryTaxAmount = ((((n.Quantity * o.Price) / (100 + o.Restaurant.PrimaryTaxRate + o.Restaurant.SecondaryTaxRate)) * 100) * o.Restaurant.PrimaryTaxRate) / 100,
-                                     SecondaryTaxAmount = ((((n.Quantity * o.Price) / (100 + o.Restaurant.PrimaryTaxRate + o.Restaurant.SecondaryTaxRate)) * 100) * o.Restaurant.SecondaryTaxRate) / 100,
-                                     Quantity = n.Quantity
-                                 }).ToListAsync();
+        }
 
-                if (foodItems != null)
-                {
-                    Order order = new Order()
-                    {
-                        RestaurantId = cart.RestaurantId,
-                        UserId = userId,
-                        TaxableAmount = foodItems.Sum(x => x.TaxableAmount),
-                        Amount = foodItems.Sum(x => x.Amount),
-                        PrimaryTaxAmount = foodItems.Sum(x => x.PrimaryTaxAmount),
-                        SecondaryTaxAmount = foodItems.Sum(x => x.SecondaryTaxAmount),
-                        DateOrdered = DateTime.Now
-                    };
+        public async Task Complete(int orderId)
+        {
 
-                    await _context.Orders.AddAsync(order);
-                    await _context.SaveChangesAsync();
-
-                    foreach (var item in foodItems)
-                    {
-                        OrderItem orderItem = new OrderItem()
-                        {
-                            FoodItemId = item.FoodItemId,
-                            OrderId = order.Id,
-                            Quantity = item.Quantity,
-                            TaxableAmount = item.TaxableAmount,
-                            Amount = item.Amount
-                        };
-
-                        orderItems.Add(orderItem);
-                    }
-
-                    await _context.OrderItems.AddRangeAsync(orderItems);
-                    await _context.SaveChangesAsync();
-
-                    _context.CartItems.RemoveRange(cartItems);
-                    await _context.SaveChangesAsync();
-
-                    _context.Carts.Remove(cart);
-                    await _context.SaveChangesAsync();
-                }
-            }
         }
     }
 }

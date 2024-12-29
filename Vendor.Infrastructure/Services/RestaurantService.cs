@@ -12,139 +12,23 @@ namespace Vendor.Infrastructure
             _context = context;
         }
 
-        #region Query for GetRestaurants()
-
-        /*    
-    @query nvarchar(MAX) = '',
-    @latpoint float = 0,
-	@longpoint float = 0,
-	@offset int = 0,
-	@fetch int = 10
-
-            SELECT [Id], [Name], [Photo], [LegalName], [AddressLine1], [AddressLine2], [Locality], [City], [Postcode], [Cuisine], [Latitude], [Longitude], ROUND([Distance], 2) AS [Distance]
-            FROM (
-	            SELECT z.[Id], z.[Name], z.[Photo], z.[LegalName], z.[AddressLine1], z.[AddressLine2], z.[Locality], z.[City], z.[Postcode], z.[Cuisine], z.[Latitude], z.[Longitude], p.[Radius],
-		                p.[DistanceUnit]
-				            * DEGREES(ACOS(LEAST(1.0, COS(RADIANS(p.[LatPoint]))
-                            * COS(RADIANS(z.[Latitude]))
-                            * COS(RADIANS(p.[LongPoint] - z.[Longitude]))
-                            + SIN(RADIANS(p.[LatPoint]))
-                            * SIN(RADIANS(z.[Latitude]))))) AS [Distance]
-	            FROM [Restaurants] AS z
-	            JOIN (
-		            SELECT @latpoint AS [LatPoint], 
-		                   @longpoint AS [LongPoint],
-			               50.0 AS [Radius],
-			               111.045 AS [DistanceUnit]
-                ) AS p ON 1=1
-	            WHERE z.[Latitude] BETWEEN p.[LatPoint] - (p.[Radius] / p.[DistanceUnit]) AND 
-	                                        p.[LatPoint] + (p.[Radius] / p.[DistanceUnit]) AND
-		                z.[Longitude] BETWEEN p.[LongPoint] - (p.[Radius] / (p.[DistanceUnit] * COS(RADIANS(p.[LatPoint])))) AND 
-							                p.[LongPoint] + (p.[Radius] / (p.[DistanceUnit] * COS(RADIANS(p.[LatPoint]))))
-            ) AS d
-            WHERE [Distance] <= [Radius] AND [NAME] LIKE '%' + @query + '%'
-            ORDER BY [Distance]
-            OFFSET @offset ROWS 
-            FETCH NEXT @fetch ROWS ONLY
-        */
-
-        #endregion
-
-        public async Task<List<RestaurantModel>> GetRestaurants(double latitude, double longitude, string? query = "", int? page = 1, int? pageSize = 10)
+        public async Task<RestaurantModel> GetRestaurant(int restaurantId)
         {
-            int offset = (Convert.ToInt32(page) - 1) * Convert.ToInt32(pageSize);
-            int fetch = Convert.ToInt32(page) * Convert.ToInt32(pageSize);
-
-            var restaurants = await _context.Database.SqlQuery<RestaurantModel>($"EXEC [dbo].[GetRestaurants] @latpoint={latitude}, @longpoint = {longitude}, @query = {query}, @offset = {offset}, @fetch = {fetch};").ToListAsync();
-            return restaurants;
-        }
-
-        #region Query for GetRestaurantsRecentlylVisited
-
-        /*
-    @user int = null,
-    @latpoint float = 0,
-	@longpoint float = 0,
-    @offset int = 0,
-    @fetch int = 10
-
-	        SELECT [Id], [Name], [Photo], [LegalName], [AddressLine1], [AddressLine2], [Locality], [City], [Postcode], [Cuisine], [Latitude], [Longitude], ROUND([Distance], 2) AS [Distance], [DateOrdered], FORMAT([DateOrdered], 'dd MMM yy, hh:mm tt', 'en-gb') AS [FormattedDateOrdered]
-	        FROM (
-		        SELECT z.[Id], z.[Name], z.[Photo], z.[LegalName], z.[AddressLine1], z.[AddressLine2], z.[Locality], z.[City], z.[Postcode], z.[Cuisine], z.[Latitude], z.[Longitude], p.[Radius], w.[DateOrdered],
-					        p.[DistanceUnit]
-						        * DEGREES(ACOS(LEAST(1.0, COS(RADIANS(p.[LatPoint]))
-						        * COS(RADIANS(z.[Latitude]))
-						        * COS(RADIANS(p.[LongPoint] - z.[Longitude]))
-						        + SIN(RADIANS(p.[LatPoint]))
-						        * SIN(RADIANS(z.[Latitude]))))) AS [Distance]
-		        FROM Restaurants AS z
-		        INNER JOIN (
-			        SELECT t.[RestaurantId], MAX(t.[DateOrdered]) AS [DateOrdered]
-			        FROM [Orders] AS t
-			        WHERE UserId = @user
-			        GROUP BY t.[RestaurantId]
-		        ) AS w ON w.RestaurantId = z.Id
-		        JOIN (
-			        SELECT @latpoint AS [LatPoint], 
-				           @longpoint AS [LongPoint],
-				           50.0 AS [Radius],
-				           111.045 AS [DistanceUnit]
-		        ) AS p ON 1=1
-		        WHERE z.[Latitude] BETWEEN p.[LatPoint] - (p.[Radius] / p.[DistanceUnit]) AND 
-									        p.[LatPoint] + (p.[Radius] / p.[DistanceUnit]) AND
-				        z.[Longitude] BETWEEN p.[LongPoint] - (p.[Radius] / (p.[DistanceUnit] * COS(RADIANS(p.[LatPoint])))) AND 
-									        p.[LongPoint] + (p.[Radius] / (p.[DistanceUnit] * COS(RADIANS(p.[LatPoint]))))
-	        ) AS d
-	        WHERE [Distance] <= [Radius]
-	        ORDER BY [DateOrdered] DESC
-	        OFFSET @offset ROWS 
-	        FETCH NEXT @fetch ROWS ONLY 
-         */
-
-        #endregion
-
-        public async Task<List<RestaurantRecentlyVisitedModel>> GetRestaurantsRecentlyVisited(int userId, double latitude, double longitude, int? page = 1, int? pageSize = 10)
-        {
-            int offset = (Convert.ToInt32(page) - 1) * Convert.ToInt32(pageSize);
-            int fetch = Convert.ToInt32(page) * Convert.ToInt32(pageSize);
-
-            var restaurants = await _context.Database.SqlQuery<RestaurantRecentlyVisitedModel>($"EXEC [dbo].[GetRestaurantsRecentlyVisited] @user={userId}, @latpoint={latitude}, @longpoint = {longitude}, @offset = {offset}, @fetch = {fetch};").ToListAsync();
-            return restaurants;
-        }
-
-        #region Query for GetRestaurant
-
-        /*
-	    @restaurant int = null,
-        @latpoint float = 0,
-	    @longpoint float = 0
-
-	        SELECT z.[Id], z.[Name], z.[Photo], z.[Locality], z.[City], z.[Postcode], z.[Cuisine], 
-                ROUND(p.[DistanceUnit]
-                    * DEGREES(ACOS(LEAST(1.0, COS(RADIANS(p.[LatPoint]))
-                    * COS(RADIANS(z.[Latitude]))
-                    * COS(RADIANS(p.[LongPoint] - z.[Longitude]))
-                    + SIN(RADIANS(p.[LatPoint]))
-                    * SIN(RADIANS(z.[Latitude]))))), 2) AS [Distance]
-	        FROM [Restaurants] AS z
-	        JOIN (
-		        SELECT @latpoint AS [LatPoint], 
-				        @longpoint AS [LongPoint],
-				        50.0 AS [Radius],
-				        111.045 AS [DistanceUnit]
-	        ) AS p ON 1=1
-	        WHERE z.Id = @restaurant
-         */
-
-        #endregion
-
-        public async Task<RestaurantModel> GetRestaurant(int restaurantId, double latitude, double longitude)
-        {
-            var restaurant = _context.Database.SqlQuery<RestaurantModel>($"EXEC [dbo].[GetRestaurant] @restaurant={restaurantId}, @latpoint={latitude}, @longpoint = {longitude};").AsEnumerable().FirstOrDefault();
+            var restaurant = await _context.Restaurants
+                                           .Where(x => x.Id == restaurantId)
+                                           .Select(x => new RestaurantModel {
+                                               Id = x.Id,
+                                               Name = x.Name,
+                                               Photo = x.Photo,
+                                               Locality = x.Locality,
+                                               City = x.City,
+                                               Cuisine = x.Cuisine,
+                                               Distance = 0
+                                           }).FirstOrDefaultAsync();
             return restaurant;
         }
 
-        public async Task<List<CategorizedFoodItemModel>> GetFoodItems(int userId, int restaurantId, string? searchText = null)
+        public async Task<List<CategorizedFoodItemModel>> GetFoodItems(int restaurantId, string? searchText = null)
         {
             var categorizedFoodItems = new List<CategorizedFoodItemModel>();
             var foodItems = new List<FoodItemModel>();
@@ -182,26 +66,6 @@ namespace Vendor.Infrastructure
                                         }).ToListAsync();
             }
 
-            var cartItems = await (from m in _context.Carts
-                             join n in _context.CartItems on m.Id equals n.CartId
-                             join o in _context.FoodItems on n.FoodItemId equals o.Id
-                             where m.UserId == userId
-                             select new
-                             {
-                                 FoodItemId = n.FoodItemId,
-                                 Quantity = n.Quantity
-                             }).ToListAsync();
-
-            foreach (var foodItem in foodItems)
-            {
-                var cartItem = cartItems.Where(x => x.FoodItemId == foodItem.Id && x.Quantity > 0).FirstOrDefault();
-
-                if (cartItem != null)
-                {
-                    foodItem.Quantity = cartItem.Quantity;
-                }
-            }
-
             foreach (var category in categories)
             {
                 var categorizedFoodItem = new CategorizedFoodItemModel();
@@ -218,6 +82,121 @@ namespace Vendor.Infrastructure
             }
 
             return categorizedFoodItems;
+        }
+
+        public async Task<List<CategoryModel>> GetCategories(int restaurantId)
+        {
+            var categories = await _context.Categories
+                                     .Where(x => x.RestaurantId == restaurantId)
+                                     .Select(x => new CategoryModel { 
+                                         Id = x.Id,
+                                         Name = x.Name,
+                                         Order = x.Order
+                                     })
+                                     .ToListAsync();
+            return categories;
+        }
+
+        public async Task UpdateRestaurantStatus(int restaurantId, bool isAvailable)
+        {
+            var item = await _context.Restaurants.Where(x => x.Id == restaurantId).FirstOrDefaultAsync();
+
+            if (item != null)
+            {
+                item.IsAvailable = isAvailable;
+            }
+
+            _context.Restaurants.Update(item);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdatePreparationTime(int restaurantId, int preparationTime)
+        {
+            var item = await _context.Restaurants.Where(x => x.Id == restaurantId).FirstOrDefaultAsync();
+
+            if (item != null)
+            {
+                item.PreparationTime = preparationTime;
+            }
+
+            _context.Restaurants.Update(item);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> UpdateFoodItem(FoodItemModel foodItem)
+        {
+            var item = await _context.FoodItems.Where(x => x.Id == foodItem.Id).FirstOrDefaultAsync();
+
+            if (item != null) 
+            {
+                item.Name = foodItem.Name;
+                item.Description = foodItem.Description;
+                item.Type = foodItem.Type;
+                item.Photo = foodItem.Photo;
+                item.Price = foodItem.Price;
+            }
+
+            _context.FoodItems.Update(item);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> UpdateCategory(CategoryModel category)
+        {
+            var item = await _context.Categories.Where(x => x.Id == category.Id).FirstOrDefaultAsync();
+
+            if (item != null)
+            {
+                item.Name = category.Name;
+            }
+
+            _context.Categories.Update(item);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<bool> ReorderCategory(int categoryId, bool increase)
+        {
+            Category swap = new Category();
+            int itemOrder, swapOrder = 0;
+            var item = await _context.Categories
+                                     .Where(x => x.Id == categoryId)
+                                     .FirstOrDefaultAsync();
+            var list = await _context.Categories
+                                     .Where(x => x.RestaurantId == item.RestaurantId)
+                                     .OrderBy(x => x.Order)
+                                     .ToListAsync();
+            var count = list.Count;
+
+            if (item != null && count > 1)
+            {
+                if ((item.Order == 1 && increase == true) || (item.Order != 1 && item.Order != count && increase == true))
+                {
+                    swap = list.FirstOrDefault(x => x.Order == (item.Order + 1));
+
+                    swap.Order = item.Order;
+                    item.Order = item.Order + 1;
+                }
+                else if ((item.Order == count && increase == false) || (item.Order != 1 && item.Order != count && increase == false))
+                {
+                    swap = list.FirstOrDefault(x => x.Order == (item.Order - 1));
+
+                    swap.Order = item.Order;
+                    item.Order = item.Order - 1;
+                }
+                else
+                {
+                    return false;
+                }
+
+                _context.Categories.Update(item);
+                _context.Categories.Update(swap);
+                await _context.SaveChangesAsync();
+            }
+
+            return true;
         }
     }
 }

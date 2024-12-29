@@ -61,8 +61,8 @@ builder.Services.AddSwaggerGen(opt =>
 });
 
 builder.Services.AddTransient<IAuthService, AuthService>();
-//builder.Services.AddTransient<IOrderService, OrderService>();
-//builder.Services.AddTransient<IRestaurantService, RestaurantService>();
+builder.Services.AddTransient<IOrderService, OrderService>();
+builder.Services.AddTransient<IRestaurantService, RestaurantService>();
 builder.Services.AddTransient<IStaffService, StaffService>();
 
 builder.Services.AddSingleton<RegexValidator>();

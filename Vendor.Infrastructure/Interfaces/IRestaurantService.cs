@@ -2,9 +2,14 @@
 {
     public interface IRestaurantService
     {
-        Task<List<RestaurantModel>> GetRestaurants(double latitude, double longitude, string? query = "", int? page = 1, int? pageSize = 10);
-        Task<List<RestaurantRecentlyVisitedModel>> GetRestaurantsRecentlyVisited(int userId, double latitude, double longitude, int? page = 1, int? pageSize = 10);
-        Task<RestaurantModel> GetRestaurant(int restaurantId, double latitude, double longitude);
-        Task<List<CategorizedFoodItemModel>> GetFoodItems(int userId, int restaurantId, string? searchText = null);
+        Task<RestaurantModel> GetRestaurant(int restaurantId);
+        Task<List<CategorizedFoodItemModel>> GetFoodItems(int restaurantId, string? searchText = null);
+        Task<List<CategoryModel>> GetCategories(int restaurantId);
+
+        Task UpdateRestaurantStatus(int restaurantId, bool isAvailable);
+        Task UpdatePreparationTime(int restaurantId, int preparationTime);
+        Task<bool> UpdateFoodItem(FoodItemModel foodItem);
+        Task<bool> UpdateCategory(CategoryModel category);
+        Task<bool> ReorderCategory(int categoryId, bool increase);
     }
 }

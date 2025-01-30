@@ -9,6 +9,7 @@ namespace Vendor.Data
         }
         public DbSet<Category> Categories { get; set; }
         public DbSet<FoodItem> FoodItems { get; set; }
+        public DbSet<Offer> Offers { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Rating> Ratings { get; set; }
